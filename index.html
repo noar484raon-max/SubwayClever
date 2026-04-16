@@ -1673,14 +1673,52 @@ const LINE_STATION_ORDER = {
   "1065": ["서울역","공덕","홍대입구","디지털미디어시티","김포공항","계양","검암","청라국제도시","영종","운서","인천공항1터미널","인천공항2터미널"],
 };
 
+// GPS 기반으로 가장 가까운 노선 판별
+function detectNearestLine() {
+  if (!state.currentPos) return "1002"; // GPS 없으면 서울2호선 기본
+
+  const lat = state.currentPos.lat;
+  const lng = state.currentPos.lng;
+  let bestLine = "1002", bestDist = Infinity;
+
+  // 각 노선의 역 좌표에서 가장 가까운 역 찾기
+  Object.entries(LINE_STATION_ORDER).forEach(([lineKey, stationNames]) => {
+    stationNames.forEach(name => {
+      const coord = SEOUL_STATION_COORDS[name];
+      if (!coord) return;
+      const d = haversine(lat, lng, coord.lat, coord.lng);
+      if (d < bestDist) { bestDist = d; bestLine = lineKey; }
+    });
+  });
+  // 인천 1호선
+  Object.values(INCHEON_1_COORDS).forEach(coord => {
+    const d = haversine(lat, lng, coord.lat, coord.lng);
+    if (d < bestDist) { bestDist = d; bestLine = "incheon1"; }
+  });
+  // 인천 2호선
+  Object.values(INCHEON_2_COORDS).forEach(coord => {
+    const d = haversine(lat, lng, coord.lat, coord.lng);
+    if (d < bestDist) { bestDist = d; bestLine = "incheon2"; }
+  });
+
+  return bestLine;
+}
+
 function renderPickerTabs() {
   const tabs = document.getElementById("pickerTabs");
-  tabs.innerHTML = LINE_TABS.map(t =>
-    `<button class="picker-tab" data-line="${t.key}" style="${t.key === '1002' ? 'background:'+t.color+';color:white;' : ''}">${t.label}</button>`
-  ).join("");
+  const defaultLine = detectNearestLine();
 
-  // 기본 선택: 2호선 (가장 많이 이용)
-  renderStationList("1002");
+  tabs.innerHTML = LINE_TABS.map(t => {
+    const isDefault = t.key === defaultLine;
+    return `<button class="picker-tab" data-line="${t.key}" style="${isDefault ? 'background:'+t.color+';color:white;' : ''}">${t.label}</button>`;
+  }).join("");
+
+  // GPS 기반 가장 가까운 노선 자동 선택
+  renderStationList(defaultLine);
+
+  // 선택된 탭이 보이도록 스크롤
+  const activeTab = tabs.querySelector(`[data-line="${defaultLine}"]`);
+  if (activeTab) activeTab.scrollIntoView({ inline: "center", block: "nearest" });
 
   tabs.querySelectorAll(".picker-tab").forEach(tab => {
     tab.addEventListener("click", () => {
