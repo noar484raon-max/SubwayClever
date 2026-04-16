@@ -3163,6 +3163,20 @@ async function init() {
     });
   }, 2000);
 }
+// 스플래시 표시 중 즉시 테마 적용 (init의 2초 대기 전에 실행)
+try {
+  const saved = localStorage.getItem("gwayeon_theme");
+  if (saved) {
+    const { from, to } = JSON.parse(saved);
+    const splash = document.getElementById("splash");
+    if (splash) splash.style.background = `linear-gradient(135deg, ${from}, ${to})`;
+  }
+  const savedImg = localStorage.getItem("gwayeon_theme_img");
+  if (savedImg) {
+    const splash = document.getElementById("splash");
+    if (splash) splash.style.background = `url(${savedImg}) center/cover no-repeat`;
+  }
+} catch(e) {}
 init();
 </script>
 </body>
