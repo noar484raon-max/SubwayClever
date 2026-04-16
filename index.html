@@ -20,7 +20,7 @@
   .splash-ver { position: absolute; bottom: 60px; font-size: 11px; color: rgba(255,255,255,0.4); }
   @keyframes pulse { 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.05); } }
 
-  .screen { display: none; flex-direction: column; height: calc(100% - 50px); }
+  .screen { display: none; flex-direction: column; height: calc(100% - 50px); overflow: hidden; }
   .screen.active { display: flex; }
 
   .header { background: linear-gradient(135deg, #0E3B8C, #1A56DB); padding: 14px 20px 18px; color: white; }
@@ -178,7 +178,7 @@
   .no-data .desc { font-size: 13px; line-height: 1.5; }
 
   /* 졸라맨 애니메이션 (GPS 미연결 시) */
-  .gps-waiting { display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; background:#F8FAFC; padding:20px; text-align:center; }
+  .gps-waiting { display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; background:#F8FAFC; padding:20px; text-align:center; overflow-y:auto; min-height:0; }
   .stickman-scene { position:relative; width:280px; height:180px; margin:0 auto 24px; overflow:hidden; }
   .stickman-ground { position:absolute; bottom:20px; left:0; right:0; height:2px; background:#CBD5E1; }
   .stickman-subway { position:absolute; bottom:22px; right:20px; font-size:48px; }
@@ -211,7 +211,7 @@
   .dark .gps-waiting { background:#0F172A; }
   .dark .gps-waiting .title { color:#F1F5F9; }
 
-  .bottom-tabs { display: flex; border-top: 1px solid #E2E8F0; background: #fff; padding: 8px 0 20px; justify-content: space-around; flex-shrink: 0; }
+  .bottom-tabs { display: flex; border-top: 1px solid #E2E8F0; background: #fff; padding: 8px 0 20px; justify-content: space-around; flex-shrink: 0; position: sticky; bottom: 0; z-index: 10; }
   .tab-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; padding: 4px 12px; }
   .tab-btn .icon { font-size: 20px; opacity: 0.4; transition: opacity 0.2s; }
   .tab-btn.active .icon { opacity: 1; }
@@ -389,7 +389,7 @@
     </div>
 
     <!-- 메인 콘텐츠 (GPS 연결 후 표시) -->
-    <div id="mainContent" style="display:none;flex-direction:column;flex:1;">
+    <div id="mainContent" style="display:none;flex-direction:column;flex:1;overflow-y:auto;min-height:0;">
     <div class="header">
       <div class="header-top">
         <div>
