@@ -177,6 +177,40 @@
   .no-data .title { font-size: 16px; font-weight: 700; color: #64748B; margin-bottom: 6px; }
   .no-data .desc { font-size: 13px; line-height: 1.5; }
 
+  /* 졸라맨 애니메이션 (GPS 미연결 시) */
+  .gps-waiting { display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; background:#F8FAFC; padding:20px; text-align:center; }
+  .stickman-scene { position:relative; width:280px; height:180px; margin:0 auto 24px; overflow:hidden; }
+  .stickman-ground { position:absolute; bottom:20px; left:0; right:0; height:2px; background:#CBD5E1; }
+  .stickman-subway { position:absolute; bottom:22px; right:20px; font-size:48px; }
+  .stickman-runner { position:absolute; bottom:22px; font-size:42px; animation:stickmanRun 3s ease-in-out infinite; }
+  @keyframes stickmanRun {
+    0% { left:-10px; transform:scaleX(1); }
+    45% { left:160px; transform:scaleX(1); }
+    50% { left:168px; transform:scaleX(1); }
+    100% { left:168px; transform:scaleX(1); }
+  }
+  .stickman-sweat { position:absolute; bottom:68px; font-size:14px; opacity:0; animation:sweatDrop 3s ease-in-out infinite; }
+  @keyframes sweatDrop {
+    0% { left:10px; opacity:0; }
+    20% { opacity:1; }
+    40% { left:140px; opacity:1; }
+    50% { left:155px; opacity:0; }
+    100% { opacity:0; }
+  }
+  .stickman-dots { position:absolute; bottom:44px; left:0; font-size:10px; color:#94A3B8; animation:dotsMove 3s linear infinite; }
+  @keyframes dotsMove {
+    0% { left:20px; opacity:0.3; }
+    40% { left:120px; opacity:0.8; }
+    50% { opacity:0; }
+    100% { opacity:0; }
+  }
+  .gps-waiting .title { font-size:20px; font-weight:800; color:#1E293B; margin-bottom:8px; }
+  .gps-waiting .desc { font-size:14px; color:#64748B; line-height:1.6; margin-bottom:20px; }
+  .gps-waiting .gps-btn { background:linear-gradient(135deg,#0E3B8C,#1A56DB); color:white; border:none; border-radius:14px; padding:14px 32px; font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(26,86,219,0.3); }
+  .gps-waiting .gps-btn:active { transform:scale(0.97); }
+  .dark .gps-waiting { background:#0F172A; }
+  .dark .gps-waiting .title { color:#F1F5F9; }
+
   .bottom-tabs { display: flex; border-top: 1px solid #E2E8F0; background: #fff; padding: 8px 0 20px; justify-content: space-around; flex-shrink: 0; }
   .tab-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; padding: 4px 12px; }
   .tab-btn .icon { font-size: 20px; opacity: 0.4; transition: opacity 0.2s; }
@@ -339,6 +373,23 @@
 
   <!-- Home Screen -->
   <div class="screen" id="homeScreen">
+    <!-- 졸라맨 GPS 대기 화면 -->
+    <div class="gps-waiting" id="gpsWaiting">
+      <div class="stickman-scene">
+        <div class="stickman-runner">🏃</div>
+        <div class="stickman-sweat">💦</div>
+        <div class="stickman-dots">· · · · ·</div>
+        <div class="stickman-subway">🚇</div>
+        <div class="stickman-ground"></div>
+      </div>
+      <div class="title">과연 탈 수 있을까?</div>
+      <div class="desc">위치 정보를 허용하면<br>가장 가까운 역의 실시간 도착 정보와<br>탑승 가능성을 알려드려요!</div>
+      <button class="gps-btn" id="btnRequestGPS">📍 위치 허용하고 시작</button>
+      <div style="margin-top:12px;font-size:12px;color:#94A3B8;">또는 하단 <strong>역검색</strong> 탭에서 직접 선택</div>
+    </div>
+
+    <!-- 메인 콘텐츠 (GPS 연결 후 표시) -->
+    <div id="mainContent" style="display:none;flex-direction:column;flex:1;">
     <div class="header">
       <div class="header-top">
         <div>
@@ -347,8 +398,8 @@
             <span id="gpsStatus">위치 확인 중...</span>
           </div>
           <div class="header-loc-name">
-            <span id="stationName">강남역</span>
-            <span class="region-badge" id="regionBadge" style="background:#EBF0FB;color:#1A56DB;">서울</span>
+            <span id="stationName">--</span>
+            <span class="region-badge" id="regionBadge" style="background:#EBF0FB;color:#1A56DB;"></span>
           </div>
         </div>
         <div class="header-btns">
@@ -428,6 +479,7 @@
         </div>
       </div>
     </div>
+    </div><!-- /mainContent -->
 
     <div class="bottom-tabs" id="homeTabs">
       <button class="tab-btn active" data-tab="home"><span class="icon">🏠</span><span class="label">홈</span></button>
@@ -634,7 +686,6 @@
           <div class="left"><div class="name">📍 GPS 고정밀 모드</div><div class="desc">배터리 소모 증가, 정확도 향상</div></div>
           <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
         </div>
-        <div class="setting-item"><div class="left"><div class="name">기본 역 설정</div><div class="desc">앱 시작 시 표시할 역</div></div><div class="right">강남역</div></div>
       </div>
 
       <!-- 연결된 서비스: 토스 연동 시 추가 예정 -->
@@ -1291,8 +1342,8 @@ const STATUS_MAP = {
 };
 
 let state = {
-  currentStation: "강남",
-  currentRegion: "seoul", // "seoul" | "incheon1" | "incheon2"
+  currentStation: null,
+  currentRegion: null, // "seoul" | "incheon1" | "incheon2"
   trains: [],
   expandedIdx: 0,
   dataSource: "loading", // "live" | "timetable" | "mock"
@@ -1520,6 +1571,9 @@ async function loadStationData() {
   const st = state.currentStation;
   const rg = state.currentRegion;
 
+  // 역이 선택되지 않은 상태면 스킵
+  if (!st || !rg) return;
+
   if (rg === "incheon1" || rg === "incheon2") {
     // 인천: 시간표 기반
     state.trains = generateIncheonTrains(st, rg);
@@ -1555,6 +1609,9 @@ async function loadStationData() {
 function setStation(name, region) {
   // 역 변경 시 station lock 해제
   if (state.pedometer.stationLocked) unlockStationMode();
+
+  // 역 선택됨 → 메인 콘텐츠 표시
+  showMainContent();
 
   state.currentStation = name;
   state.currentRegion = region;
@@ -2100,6 +2157,20 @@ function playAlertSound(type) {
 // ================================================================
 // GPS
 // ================================================================
+// GPS 대기화면 → 메인화면 전환
+function showMainContent() {
+  const waiting = document.getElementById("gpsWaiting");
+  const main = document.getElementById("mainContent");
+  if (waiting) waiting.style.display = "none";
+  if (main) main.style.display = "flex";
+}
+function showGpsWaiting() {
+  const waiting = document.getElementById("gpsWaiting");
+  const main = document.getElementById("mainContent");
+  if (waiting) waiting.style.display = "flex";
+  if (main) main.style.display = "none";
+}
+
 function initGPS() {
   if (!navigator.geolocation) {
     updateGPSStatus("off", "GPS 미지원");
@@ -2115,6 +2186,9 @@ function initGPS() {
       state.lastGPSTime = Date.now();
       state.lastGPSAccuracy = pos.coords.accuracy;
       state.currentPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+
+      // GPS 연결됨 → 졸라맨 화면 숨기고 메인 표시
+      showMainContent();
 
       // GPS 불안정 감지 → 역 내부 진입 판단
       checkTrackingMode();
@@ -3000,13 +3074,19 @@ async function init() {
   setTimeout(async () => {
     document.getElementById("splash").style.opacity = "0";
     setTimeout(() => { document.getElementById("splash").style.display = "none"; showScreen("homeScreen"); }, 600);
-    await loadStationData();
+
+    // GPS 대기 화면부터 시작 (기본역 없음)
+    showGpsWaiting();
     initGPS();
     initPedometer();
     renderFavorites();
-    fetchWeather();
-    checkCommuteRoutine();
     initThemeSettings();
+
+    // "위치 허용하고 시작" 버튼
+    document.getElementById("btnRequestGPS").addEventListener("click", () => {
+      initGPS(); // GPS 재요청 → 브라우저 권한 팝업
+      showToast("📍 위치 권한을 허용해주세요");
+    });
 
     // 주기적 GPS/만보기 모드 체크 (5초마다)
     setInterval(checkTrackingMode, 5000);
