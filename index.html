@@ -580,6 +580,27 @@
         </div>
       </div>
 
+      <!-- 테마 설정 -->
+      <div class="setting-group">
+        <div class="setting-group-title">테마</div>
+        <div class="setting-item" style="flex-direction:column;align-items:stretch;gap:10px;">
+          <div class="left"><div class="name">🎨 테마 색상</div><div class="desc">헤더와 시작 화면 색상을 변경합니다</div></div>
+          <div id="themeColorGrid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;"></div>
+        </div>
+        <div class="setting-item" style="cursor:pointer" id="btnThemeImage">
+          <div class="left">
+            <div class="name">🖼️ 배경 이미지</div>
+            <div class="desc" id="themeImageDesc">이미지 없음 — 탭하여 설정</div>
+          </div>
+          <div class="right" style="display:flex;gap:6px;">
+            <span id="themeImagePreview" style="width:36px;height:36px;border-radius:8px;background:#E2E8F0;display:flex;align-items:center;justify-content:center;font-size:16px;overflow:hidden;">📷</span>
+          </div>
+        </div>
+        <div class="setting-item" style="cursor:pointer;display:none;" id="btnThemeImageClear">
+          <div class="left"><div class="name" style="color:#DC2626;">🗑️ 배경 이미지 제거</div></div>
+        </div>
+      </div>
+
       <!-- 알림 -->
       <div class="setting-group">
         <div class="setting-group-title">알림</div>
@@ -2494,6 +2515,180 @@ function toggleDarkMode(on) {
 }
 
 // ================================================================
+// 테마 설정 (색상 + 배경 이미지)
+// ================================================================
+const THEME_PRESETS = [
+  { name: "기본 블루",  from: "#0E3B8C", to: "#1A56DB" },
+  { name: "퍼플",      from: "#5B21B6", to: "#7C3AED" },
+  { name: "핑크",      from: "#BE185D", to: "#EC4899" },
+  { name: "그린",      from: "#065F46", to: "#059669" },
+  { name: "오렌지",    from: "#C2410C", to: "#EA580C" },
+  { name: "레드",      from: "#991B1B", to: "#DC2626" },
+  { name: "틸",        from: "#115E59", to: "#0D9488" },
+  { name: "인디고",    from: "#312E81", to: "#4F46E5" },
+  { name: "슬레이트",  from: "#1E293B", to: "#475569" },
+  { name: "골드",      from: "#92400E", to: "#D97706" },
+  { name: "로즈",      from: "#9F1239", to: "#F43F5E" },
+  { name: "시안",      from: "#155E75", to: "#06B6D4" },
+];
+
+let currentTheme = { from: "#0E3B8C", to: "#1A56DB", image: null };
+
+function applyThemeColor(from, to) {
+  currentTheme.from = from;
+  currentTheme.to = to;
+  const grad = `linear-gradient(135deg, ${from}, ${to})`;
+
+  // 헤더
+  document.querySelectorAll(".header").forEach(h => {
+    if (!currentTheme.image) h.style.background = grad;
+  });
+  // 스플래시
+  const splash = document.getElementById("splash");
+  if (splash) {
+    if (!currentTheme.image) splash.style.background = grad;
+  }
+  // 속도 측정 버튼
+  document.querySelectorAll(".measure-btn:not(.secondary)").forEach(b => b.style.background = from);
+  // 재측정 버튼
+  document.querySelectorAll(".remeasure-btn").forEach(b => b.style.background = from);
+
+  // localStorage 저장
+  try { localStorage.setItem("gwayeon_theme", JSON.stringify({ from, to })); } catch(e) {}
+  showToast("🎨 테마 색상 변경됨");
+}
+
+function applyThemeImage(dataUrl) {
+  currentTheme.image = dataUrl;
+  const bgStyle = `url(${dataUrl}) center/cover no-repeat`;
+
+  // 헤더에 이미지 + 오버레이
+  document.querySelectorAll(".header").forEach(h => {
+    h.style.background = bgStyle;
+    h.style.position = "relative";
+    // 가독성을 위한 어두운 오버레이
+    if (!h.querySelector(".theme-overlay")) {
+      const overlay = document.createElement("div");
+      overlay.className = "theme-overlay";
+      overlay.style.cssText = "position:absolute;inset:0;background:rgba(0,0,0,0.4);pointer-events:none;border-radius:inherit;";
+      h.style.position = "relative";
+      h.insertBefore(overlay, h.firstChild);
+      // 기존 내용을 relative로
+      Array.from(h.children).forEach(child => {
+        if (!child.classList.contains("theme-overlay")) child.style.position = "relative";
+      });
+    }
+  });
+  // 스플래시
+  const splash = document.getElementById("splash");
+  if (splash) splash.style.background = bgStyle;
+
+  // 미리보기
+  const preview = document.getElementById("themeImagePreview");
+  if (preview) {
+    preview.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+  }
+  document.getElementById("themeImageDesc").textContent = "이미지 적용됨";
+  document.getElementById("btnThemeImageClear").style.display = "flex";
+
+  try { localStorage.setItem("gwayeon_theme_img", dataUrl); } catch(e) {}
+  showToast("🖼️ 배경 이미지 적용됨");
+}
+
+function clearThemeImage() {
+  currentTheme.image = null;
+  const grad = `linear-gradient(135deg, ${currentTheme.from}, ${currentTheme.to})`;
+
+  document.querySelectorAll(".header").forEach(h => {
+    h.style.background = grad;
+    const overlay = h.querySelector(".theme-overlay");
+    if (overlay) overlay.remove();
+  });
+  const splash = document.getElementById("splash");
+  if (splash) splash.style.background = grad;
+
+  document.getElementById("themeImagePreview").innerHTML = "📷";
+  document.getElementById("themeImageDesc").textContent = "이미지 없음 — 탭하여 설정";
+  document.getElementById("btnThemeImageClear").style.display = "none";
+
+  try { localStorage.removeItem("gwayeon_theme_img"); } catch(e) {}
+  showToast("🗑️ 배경 이미지 제거됨");
+}
+
+function renderThemeColorGrid() {
+  const grid = document.getElementById("themeColorGrid");
+  if (!grid) return;
+  grid.innerHTML = THEME_PRESETS.map((t, i) => {
+    const isActive = t.from === currentTheme.from && t.to === currentTheme.to;
+    return `<div data-tidx="${i}" style="width:100%;aspect-ratio:1;border-radius:12px;background:linear-gradient(135deg,${t.from},${t.to});cursor:pointer;border:3px solid ${isActive ? 'white' : 'transparent'};box-shadow:${isActive ? '0 0 0 2px '+t.to : '0 1px 4px rgba(0,0,0,0.1)'};transition:all 0.2s;display:flex;align-items:center;justify-content:center;" title="${t.name}">
+      ${isActive ? '<span style="color:white;font-size:14px;">✓</span>' : ''}
+    </div>`;
+  }).join("");
+
+  grid.querySelectorAll("[data-tidx]").forEach(el => {
+    el.addEventListener("click", () => {
+      const t = THEME_PRESETS[parseInt(el.dataset.tidx)];
+      applyThemeColor(t.from, t.to);
+      renderThemeColorGrid(); // 선택 표시 업데이트
+    });
+  });
+}
+
+function initThemeSettings() {
+  // 저장된 테마 복원
+  try {
+    const saved = localStorage.getItem("gwayeon_theme");
+    if (saved) {
+      const { from, to } = JSON.parse(saved);
+      currentTheme.from = from;
+      currentTheme.to = to;
+      const grad = `linear-gradient(135deg, ${from}, ${to})`;
+      document.querySelectorAll(".header").forEach(h => h.style.background = grad);
+      const splash = document.getElementById("splash");
+      if (splash) splash.style.background = grad;
+    }
+    const savedImg = localStorage.getItem("gwayeon_theme_img");
+    if (savedImg) {
+      setTimeout(() => applyThemeImage(savedImg), 100);
+    }
+  } catch(e) {}
+
+  // 색상 그리드 렌더
+  renderThemeColorGrid();
+
+  // 이미지 선택 버튼
+  document.getElementById("btnThemeImage").addEventListener("click", () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        // 이미지 리사이즈 (너무 크면 성능 이슈)
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const maxW = 800;
+          const scale = Math.min(1, maxW / img.width);
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+          applyThemeImage(canvas.toDataURL("image/jpeg", 0.8));
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+    input.click();
+  });
+
+  // 이미지 제거 버튼
+  document.getElementById("btnThemeImageClear").addEventListener("click", clearThemeImage);
+}
+
+// ================================================================
 // 화면 전환 & 이벤트
 // ================================================================
 function showScreen(id) {
@@ -2836,6 +3031,7 @@ async function init() {
     renderFavorites();
     fetchWeather();
     checkCommuteRoutine();
+    initThemeSettings();
 
     // 주기적 GPS/만보기 모드 체크 (5초마다)
     setInterval(checkTrackingMode, 5000);
