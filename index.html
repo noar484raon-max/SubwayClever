@@ -352,8 +352,6 @@
           </div>
         </div>
         <div class="header-btns">
-          <button class="header-btn" id="btnRouteMap" title="노선도">🗺️</button>
-          <button class="header-btn" id="btnStation" title="역 선택">🔍</button>
           <button class="header-btn" id="btnRefresh" title="새로고침">🔄</button>
           <button class="header-btn" id="btnSetup" title="속도 측정">⚡</button>
         </div>
@@ -553,20 +551,6 @@
     </div>
     <div class="settings-content">
       <!-- 계정 -->
-      <div class="setting-group">
-        <div class="setting-group-title">계정</div>
-        <div class="setting-item" style="cursor:pointer" id="btnAccount">
-          <div class="left" style="display:flex;align-items:center;gap:12px;">
-            <div class="account-avatar">S</div>
-            <div>
-              <div class="name">SKTL50120</div>
-              <div class="desc">dwsong@sk.com · 소셜 로그인</div>
-            </div>
-          </div>
-          <div class="right">→</div>
-        </div>
-      </div>
-
       <!-- 화면 설정 -->
       <div class="setting-group">
         <div class="setting-group-title">화면</div>
@@ -653,13 +637,7 @@
         <div class="setting-item"><div class="left"><div class="name">기본 역 설정</div><div class="desc">앱 시작 시 표시할 역</div></div><div class="right">강남역</div></div>
       </div>
 
-      <!-- 연결된 서비스 -->
-      <div class="setting-group">
-        <div class="setting-group-title">연결된 서비스</div>
-        <div class="setting-item"><div class="left"><div class="name">카카오 로그인</div><div class="desc">연결됨</div></div><div class="right" style="color:#059669">✓</div></div>
-        <div class="setting-item"><div class="left"><div class="name">Apple 로그인</div><div class="desc">미연결</div></div><div class="right" style="color:#94A3B8">연결</div></div>
-        <div class="setting-item"><div class="left"><div class="name">T map 연동</div><div class="desc">미연결</div></div><div class="right" style="color:#94A3B8">연결</div></div>
-      </div>
+      <!-- 연결된 서비스: 토스 연동 시 추가 예정 -->
 
       <!-- 정보 -->
       <div class="setting-group">
@@ -668,7 +646,6 @@
         <div class="setting-item"><div class="left"><div class="name">이용약관</div></div><div class="right">→</div></div>
         <div class="setting-item"><div class="left"><div class="name">개인정보 처리방침</div></div><div class="right">→</div></div>
         <div class="setting-item"><div class="left"><div class="name">오픈소스 라이선스</div></div><div class="right">→</div></div>
-        <div class="setting-item" style="cursor:pointer"><div class="left"><div class="name" style="color:#DC2626">로그아웃</div></div><div class="right"></div></div>
       </div>
     </div>
     <div class="bottom-tabs">
@@ -2698,7 +2675,6 @@ function showScreen(id) {
   if (id === "statsScreen") renderWeeklyChart();
 }
 
-document.getElementById("btnStation").addEventListener("click", openStationPicker);
 document.getElementById("pickerClose").addEventListener("click", closeStationPicker);
 document.getElementById("stationOverlay").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeStationPicker(); });
 
@@ -2717,7 +2693,7 @@ document.getElementById("darkModeToggle").addEventListener("change", (e) => {
 });
 
 // 계정 클릭
-document.getElementById("btnAccount").addEventListener("click", () => showToast("👤 계정 관리 (준비 중)"));
+// 계정 섹션 제거됨
 
 // 모든 탭 버튼
 document.querySelectorAll(".tab-btn").forEach(btn => {
@@ -3039,8 +3015,7 @@ async function init() {
     // 날씨 30분마다 갱신
     setInterval(fetchWeather, 30 * 60 * 1000);
 
-    // 노선도 버튼
-    document.getElementById("btnRouteMap").addEventListener("click", openRouteMap);
+    // 노선도 오버레이 (하단 탭에서 접근)
     document.getElementById("routeMapClose").addEventListener("click", closeRouteMap);
     document.getElementById("routeMapOverlay").addEventListener("click", (e) => {
       if (e.target === document.getElementById("routeMapOverlay")) closeRouteMap();
