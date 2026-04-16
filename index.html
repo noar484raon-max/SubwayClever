@@ -2136,7 +2136,6 @@ function initGPS() {
       document.getElementById("coordDisplay").textContent = `${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`;
       document.getElementById("accuracyDisplay").textContent = `±${Math.round(pos.coords.accuracy)}m`;
       document.getElementById("gpsSettingStatus").textContent = "연결됨";
-      document.getElementById("gpsDetailStatus").textContent = "실시간 추적 중";
 
       recalcAllStatus();
     },
